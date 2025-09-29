@@ -16,7 +16,7 @@ router.post('/signup', async (req, res, next) => {
     const existing = await db.collection('users').findOne({ $or: [{ email }, { username }] });
     if (existing) return res.status(409).json({ error: 'User already exists' });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT_ROUNDS));
     const result = await db.collection('users').insertOne({
       username,
       email,
@@ -47,7 +47,7 @@ router.post('/login', async (req, res, next) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.TOKEN_EXPIRY || '7d' });
 
     res.json({ message: 'Logged in', token, user: { id: user._id, username: user.username, email: user.email } });
   } catch (err) {

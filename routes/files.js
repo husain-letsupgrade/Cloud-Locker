@@ -69,7 +69,7 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
       ownerId,
       size: file.size,
       fileType: file.mimetype,
-      storagePath: path.join('uploads', file.filename),
+      storagePath: path.join(process.env.UPLOAD_DIR, file.filename),
       createdAt: new Date(),
       updatedAt: new Date(),
       starred: false,
