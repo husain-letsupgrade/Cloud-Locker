@@ -106,4 +106,25 @@ router.delete('/:id', async (req, res, next) => {
     next(err);
   }
 });
+
+// Download file
+router.get('/:id/download', async (req, res, next) => {
+  try {
+    const db = getDB();
+    const ownerId = req.user.id;
+    const fileId = req.params.id;
+
+    const file = await db.collection('files').findOne({ _id: fileId, ownerId });
+    if (!file) return res.status(404).json({ error: 'File not found' });
+
+    const fs = require('fs');
+    if (!fs.existsSync(file.storagePath)) {
+      return res.status(404).json({ error: 'File missing from storage' });
+    }
+
+    res.download(file.storagePath, file.name); // send file for download with original name
+  } catch (err) {
+    next(err);
+  }
+});
 module.exports = router;
